@@ -1,9 +1,22 @@
-const express = require('express');
-const { addProduct, getProducts } = require('../controllers/productController');
+import express from 'express';
+import { ProductController } from '../controllers/productController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', addProduct);
-router.get('/', getProducts);
+router.post('/', 
+  authMiddleware.verifyToken, 
+  ProductController.create
+);
 
-module.exports = router; // ✅ Ensure this line exists
+router.get('/:id', 
+  authMiddleware.verifyToken,
+  ProductController.getById
+);
+
+router.patch('/:id/stock',
+  authMiddleware.verifyToken,
+  ProductController.updateStock
+);
+
+export const productRoutes = router;

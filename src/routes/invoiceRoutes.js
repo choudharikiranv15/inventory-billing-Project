@@ -1,15 +1,22 @@
-const express = require('express');
-const { generateInvoice, getInvoices, generateInvoicePDF } = require('../controllers/invoiceController'); // ✅ Correct import
+import express from 'express';
+import { generateInvoice, getInvoices, generateInvoicePDFHandler } from '../controllers/invoiceController.js';
 
 const router = express.Router();
 
-// Ensure these functions exist before using them
-if (!generateInvoice || !getInvoices || !generateInvoicePDF) {
-    throw new Error("One or more functions are undefined in invoiceRoutes.js");
-}
+// Ensure all functions are defined before using them
+router.post('/', (req, res, next) => {
+  if (!generateInvoice) return res.status(500).json({ error: 'generateInvoice is undefined' });
+  generateInvoice(req, res, next);
+});
 
-router.post('/', generateInvoice); 
-router.get('/', getInvoices); 
-router.get('/download/:invoice_id', generateInvoicePDF);
+router.get('/', (req, res, next) => {
+  if (!getInvoices) return res.status(500).json({ error: 'getInvoices is undefined' });
+  getInvoices(req, res, next);
+});
 
-module.exports = router; // ✅ Ensure this line exists
+router.get('/download/:invoice_id', (req, res, next) => {
+  if (!generateInvoicePDFHandler) return res.status(500).json({ error: 'generateInvoicePDFHandler is undefined' });
+  generateInvoicePDFHandler(req, res, next);
+});
+
+export default router;

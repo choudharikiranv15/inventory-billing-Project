@@ -1,19 +1,19 @@
-const pool = require('../config/db');
+import bcrypt from 'bcryptjs';
+import { query as poolQuery } from '../config/db.js';
 
-const createUser = async (name, email, hashedPassword) => {
-    const query = `
-        INSERT INTO users (name, email, password)
-        VALUES ($1, $2, $3) RETURNING *;
-    `;
-    const values = [name, email, hashedPassword];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+export const createUser = async (username, password) => {
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const query = `
+    INSERT INTO users (username, password)
+    VALUES ($1, $2)
+    RETURNING id, username
+  `;
+  const { rows } = await poolQuery(query, [username, hashedPassword]);
+  return rows[0];
 };
 
-const getUserByEmail = async (email) => {
-    const query = `SELECT * FROM users WHERE email = $1;`;
-    const result = await pool.query(query, [email]);
-    return result.rows[0];
+export const findUserByUsername = async (username) => {
+  const query = 'SELECT id, username, password FROM users WHERE username = $1';
+  const { rows } = await poolQuery(query, [username]);
+  return rows[0] || null;
 };
-
-module.exports = { createUser, getUserByEmail };

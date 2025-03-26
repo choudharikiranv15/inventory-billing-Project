@@ -1,9 +1,32 @@
-const express = require('express');
-const { register, login } = require('../controllers/authController');
+import express from 'express';
+import { register, login } from '../controllers/authController.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.get('/verify', verifyToken, (req, res) => {
+  res.json({ status: 'Valid token', user: req.user });
+});
 
-module.exports = router;
+router.get('/protected-route', verifyToken, (req, res) => {
+    res.json({ 
+      status: 'Access granted',
+      user: req.user 
+    });
+  });
+
+router.get('/verify-token', verifyToken, (req, res) => {
+    res.json({ user: req.user });
+  });
+
+ 
+router.get('/admin-route', verifyToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+    res.json({ secretData: 'For admin eyes only' });
+}); 
+
+export default router;

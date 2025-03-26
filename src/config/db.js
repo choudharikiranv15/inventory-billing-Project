@@ -1,16 +1,30 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+import pg from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Destructure after default import
+const { Pool } = pg;
 
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: 5432
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+  max: 20,
+  idleTimeoutMillis: 30000
 });
 
-pool.connect()
-    .then(() => console.log("PostgreSQL Connected"))
-    .catch(err => console.error("DB Connection Error:", err));
+// Modern async/await connection test
+try {
+  const client = await pool.connect();
+  console.log('PostgreSQL connected successfully');
+  client.release();
+} catch (err) {
+  console.error('Database connection error:', err);
+}
 
-module.exports = pool;
+// Export methods
+export const query = (text, params) => pool.query(text, params);
+export const getClient = () => pool.connect();

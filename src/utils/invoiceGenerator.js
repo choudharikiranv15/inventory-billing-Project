@@ -1,28 +1,31 @@
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
 
-const generateInvoicePDF = (invoice, callback) => {
-    const doc = new PDFDocument();
-    const filePath = path.join(__dirname, `../../invoices/invoice_${invoice.id}.pdf`);
-    
-    // Ensure invoices directory exists
-    if (!fs.existsSync(path.join(__dirname, '../../invoices'))) {
-        fs.mkdirSync(path.join(__dirname, '../../invoices'));
-    }
+export const generateInvoice = (invoiceNumber, customer, items) => {
+  const doc = new PDFDocument();
+  const path = `./invoices/${invoiceNumber}.pdf`;
 
-    doc.pipe(fs.createWriteStream(filePath));
+  // Header
+  doc.fontSize(20).text('INVOICE', { align: 'center' });
+  doc.fontSize(10).text(`No: ${invoiceNumber}`, { align: 'right' });
 
-    // PDF Header
-    doc.fontSize(18).text("Invoice", { align: "center" }).moveDown();
-    doc.fontSize(12).text(`Invoice ID: ${invoice.id}`);
-    doc.text(`Product: ${invoice.product_name}`);
-    doc.text(`Total Amount: ₹${invoice.total_amount}`);
-    doc.text(`Date: ${invoice.invoice_date}`);
-    
-    doc.end();
+  // Customer Info
+  doc.text(`Customer: ${customer.name}`);
 
-    callback(filePath);
+  // Items Table
+  let total = 0;
+  doc.moveDown().text('ITEMS:', { underline: true });
+  items.forEach((item) => {
+    const itemTotal = item.quantity * item.price;
+    total += itemTotal;
+    doc.text(`${item.name} - ${item.quantity} x ₹${item.price} = ₹${itemTotal}`);
+  });
+
+  doc.moveDown().text(`TOTAL: ₹${total}`, { bold: true });
+
+  doc.pipe(fs.createWriteStream(path));
+  doc.end();
+  return path;
 };
 
-module.exports = generateInvoicePDF;
+export default { generateInvoice };

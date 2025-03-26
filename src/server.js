@@ -1,25 +1,40 @@
-const express = require('express');
-require('dotenv').config();
-const cors = require('cors');
-const bodyParser = require('body-parser');
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import path from 'path';
+import authRoutes from './routes/authRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
 
-const productRoutes = require('./routes/productRoutes'); // ✅ Ensure this is correct
-const salesRoutes = require('./routes/salesRoutes'); // ✅ Ensure this is correct
-const invoiceRoutes = require('./routes/invoiceRoutes'); // ✅ Ensure this is correct
-const authRoutes = require('./routes/authRoutes');
-const { verifyToken } = require('./middleware/authMiddleware');
+dotenv.config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Public Routes
+// Test route
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date() });
+});
+
+// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/reports', reportRoutes);
 
-// Protected Routes
-app.use('/api/products', verifyToken, productRoutes);
-app.use('/api/sales', verifyToken, salesRoutes);
-app.use('/api/invoices', verifyToken, invoiceRoutes);
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: 'Server error',
+    message: err.message,
+  });
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});

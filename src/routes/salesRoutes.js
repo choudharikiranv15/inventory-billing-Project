@@ -1,9 +1,9 @@
-const express = require('express');
-const { addSale, getSales } = require('../controllers/salesController');
+import express from 'express';
+import { addSale, getSales } from '../controllers/salesController.js';
 
 const router = express.Router();
 
 router.post('/', addSale);
 router.get('/', getSales);
 
-module.exports = router; // ✅ Ensure this line exists
+export default router;
