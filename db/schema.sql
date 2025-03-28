@@ -16,3 +16,6 @@ CREATE TABLE stock_alerts (
   alert_type VARCHAR(20) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+ALTER TABLE products
+ADD COLUMN barcode_type VARCHAR(20) CHECK (barcode_type IN ('UPC-A', 'EAN-13', 'CUSTOM'));

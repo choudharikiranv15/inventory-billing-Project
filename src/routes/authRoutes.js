@@ -29,4 +29,15 @@ router.get('/admin-route', verifyToken, (req, res) => {
     res.json({ secretData: 'For admin eyes only' });
 }); 
 
+//  temporary route for testing purposes
+router.get('/whoami', verifyToken, (req, res) => {
+  res.json({
+    userId: req.user.id,
+    username: req.user.username,
+    role: req.user.role,
+    permissions: req.user.permissions
+  });
+});
+
+
 export default router;
